@@ -1,51 +1,85 @@
 from faker import Faker
+from typing import Type
 
 
-class BusinessCard:
-    def __init__(self, name, surname, company, position, email):
+class BaseContact:
+    def __init__(self, name: str, surname: str, phone: str, email: str):
+        """Initialize a basic contact."""
         self.name = name
         self.surname = surname
-        self.company = company
-        self.position = position
+        self.phone = phone
         self.email = email
 
-    def __str__(self):
-        return f'{self.name} {self.surname}, {self.position}, {self.email}'
+    def __str__(self) -> str:
+        """Return a formatted string representation of the contact."""
+        return f'{self.name} {self.surname}, {self.email}'
 
-    def contact(self):
-        print(f"Kontaktuję się z {self.__str__()}.")
+    def contact(self) -> None:
+        """Simulate making contact using the private phone number."""
+        print(f"Wybieram nr prywatny {self.phone} i dzwonię do {self.name} {self.surname}.")
 
     @property
-    def length_of_name_and_surname(self):
+    def label_length(self) -> int:
+        """Calculate and return the length of the contact's name plus surname."""
         return len(self.name) + len(self.surname) + 1
 
 
-fake = Faker(locale='pl')
+class BusinessContact(BaseContact):
+    def __init__(self, company: str, position: str, business_phone: str, *args, **kwargs):
+        """
+        Initialize a business contact.
+
+        Inherits from BaseContact and adds company, position, and business phone.
+        """
+        super().__init__(*args, **kwargs)
+        self.company = company
+        self.position = position
+        self.business_phone = business_phone
+
+    def contact(self) -> None:
+        """Simulate making contact using the business phone number."""
+        print(f"Wybieram nr służbowy {self.business_phone} i dzwonię do {self.name} {self.surname}.")
 
 
-business_cards = []
-for i in range(0, 5):
-    fake_name = fake.first_name()
-    fake_surname = fake.last_name()
-    fake_company = fake.company()
-    fake_position = fake.job()
-    fake_email = fake.email()
-    business_card = BusinessCard(
-        name=fake_name,
-        surname=fake_surname,
-        company=fake_company,
-        position=fake_position,
-        email=fake_email
-    )
-    business_cards.append(business_card)
+def create_contacts(contact_type: Type[BaseContact], amount: int):
+    """
+    Create a list of contacts based on the specified contact type and amount.
 
-# for card in business_cards:
-#     print("Name:", card.name)
-#     print("Surname:", card.surname)
-#     print("Company:", card.company)
-#     print("Position:", card.position)
-#     print("Email:", card.email)
-#     print()
+    :param contact_type: Type of contact (BaseContact or BusinessContact).
+    :param amount: Number of contacts to create.
+    :return: List of created contact instances.
+    """
+    fake = Faker(locale='pl')
+    _contacts = []
 
-business_cards[0].contact()
-print(business_cards[0].length_of_name_and_surname)
+    for _ in range(0, amount):
+        fake_name = fake.first_name()
+        fake_surname = fake.last_name()
+        fake_phone = fake.phone_number()
+        fake_email = fake.email()
+
+        kwargs = {
+            'name': fake_name,
+            'surname': fake_surname,
+            'email': fake_email,
+            'phone': fake_phone
+        }
+
+        if issubclass(contact_type, BusinessContact):
+            kwargs['company'] = fake.company()
+            kwargs['position'] = fake.job()
+            kwargs['business_phone'] = fake.phone_number()
+
+        _contact = contact_type(**kwargs)
+        _contacts.append(_contact)
+
+    return _contacts
+
+
+contacts = create_contacts(BaseContact, 2)
+for contact in contacts:
+    contact.contact()
+contacts = create_contacts(BusinessContact, 2)
+for contact in contacts:
+    contact.contact()
+
