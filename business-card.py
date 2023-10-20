@@ -1,5 +1,5 @@
 from faker import Faker
-from typing import Type
+from typing import Type, List
 
 
 class BaseContact:
@@ -41,7 +41,7 @@ class BusinessContact(BaseContact):
         print(f"Wybieram nr służbowy {self.business_phone} i dzwonię do {self.name} {self.surname}.")
 
 
-def create_contacts(contact_type: Type[BaseContact], amount: int):
+def create_contacts(contact_type: Type[BaseContact], amount: int) -> List[BaseContact]:
     """
     Create a list of contacts based on the specified contact type and amount.
 
